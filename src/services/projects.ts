@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { DEFAULT_TASK_STATUS } from '../constants.js';
 import { pool } from '../db.js';
 import type { CreateProjectInput, Project, Task } from '../types.js';
@@ -12,7 +11,7 @@ export class ProjectService {
     async create(input: CreateProjectInput): Promise<Project> {
         const now = new Date().toISOString();
         const project: Project = {
-            id: 'project-' + randomUUID(),
+            id: 'project-' + input.name,
             name: input.name,
             description: input.description ?? null,
             createdAt: now,
@@ -23,7 +22,7 @@ export class ProjectService {
         }
 
         const task: Task = {
-            id: 'task-' + randomUUID(),
+            id: 'task-' + input.task?.title,
             projectId: project.id,
             title: input.task.title,
             description: input.task.description ?? null,
@@ -36,8 +35,10 @@ export class ProjectService {
         return projectsRepo.createWithFirstTask(project, task);
     }
 
-    getAll() {
-        return projectsRepo.findAll();
+    async getAll() {
+        const projects = await projectsRepo.findAll();
+        if(!projects) throw new AppError('Проекты не найдены', 'projects_not_found');
+        return projects;
     }
 
     async getById(projectId: string) {

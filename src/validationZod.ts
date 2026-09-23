@@ -1,41 +1,41 @@
 import type { RequestHandler } from 'express';
-import { z, type ZodType } from 'zod';
+import zod, { type ZodType } from 'zod';
 import { TASK_STATUSES } from './constants.js';
 import { AppError } from './errors.js';
 
 export class Validator {
     private text(message: string) {
-        return z.string({ error: message }).trim().min(1, { error: message });
+        return zod.string({ error: message }).trim().min(1, { error: message });
     }
 
     private taskFields() {
         return {
             title: this.text('Укажите название задачи'),
-            description: z.string().trim().optional(),
+            description: zod.string().trim().optional(),
             assigneeId: this.text('Укажите исполнителя').optional(),
-            status: z.enum(TASK_STATUSES, { message: 'Недопустимый статус задачи' }).optional(),
+            status:     zod.enum(TASK_STATUSES, { message: 'Недопустимый статус задачи' }).optional(),
         };
     }
 
     createProject(): RequestHandler {
-        const schema = z.object({
+        const schema = zod.object({
             name: this.text('Укажите название проекта'),
-            description: z.string().trim().optional(),
-            task: z.object(this.taskFields()).optional(),
+            description: zod.string().trim().optional(),
+            task: zod.object(this.taskFields()).optional(),
         });
         return this.body(schema);
     }
 
     createTask(): RequestHandler {
-        return this.body(z.object(this.taskFields()));
+        return this.body(zod.object(this.taskFields()));
     }
 
     patchTask(): RequestHandler {
-        const schema = z
+        const schema = zod
             .object({
                 title: this.text('Укажите название задачи').optional(),
-                description: z.string().trim().nullable().optional(),
-                status: z.enum(TASK_STATUSES, { message: 'Недопустимый статус задачи' }).optional(),
+                description: zod.string().trim().nullable().optional(),
+                status: zod.enum(TASK_STATUSES, { message: 'Недопустимый статус задачи' }).optional(),
                 assigneeId: this.text('Укажите исполнителя').nullable().optional(),
             })
             .refine((value) => Object.keys(value).length > 0, {
@@ -45,18 +45,29 @@ export class Validator {
     }
 
     taskFilter(): RequestHandler {
-        const schema = z.object({
-            status: z.enum(TASK_STATUSES, { message: 'Недопустимый статус задачи' }).optional(),
-            assigneeId: z.string().trim().min(1, 'Укажите исполнителя').optional(),
+        const schema = zod.object({
+            status: zod.enum(TASK_STATUSES, { message: 'Недопустимый статус задачи' }).optional(),
+            assigneeId: zod.string().trim().min(1, 'Укажите исполнителя').optional(),
         });
         return this.query(schema);
+    }
+
+    private fieldErrors(issues: { path: PropertyKey[]; message: string }[]) {
+        const fields: Record<string, string> = {};
+        for (const issue of issues) {
+            const key = issue.path.map(String).join('.') || 'body';
+            if (fields[key] === undefined) fields[key] = issue.message;
+        }
+        return fields;
     }
 
     private body(schema: ZodType): RequestHandler {
         return (req, res, next) => {
             const parsed = schema.safeParse(req.body);
             if (!parsed.success) {
-                next(new AppError(parsed.error.issues[0]?.message ?? 'Невалидное тело запроса', 'validation_error'));
+                const fields = this.fieldErrors(parsed.error.issues);
+                const message = fields.name ?? Object.values(fields)[0] ?? 'Невалидное тело запроса';
+                next(new AppError(message, 'validation_error', fields));
                 return;
             }
             res.locals.input = parsed.data;
@@ -68,7 +79,9 @@ export class Validator {
         return (req, res, next) => {
             const parsed = schema.safeParse(req.query);
             if (!parsed.success) {
-                next(new AppError(parsed.error.issues[0]?.message ?? 'Невалидные параметры запроса', 'validation_error'));
+                const fields = this.fieldErrors(parsed.error.issues);
+                const message = Object.values(fields)[0] ?? 'Невалидные параметры запроса';
+                next(new AppError(message, 'validation_error', fields));
                 return;
             }
             res.locals.query = parsed.data;

@@ -51,6 +51,12 @@ export class TaskService {
         const ok = await tasksRepo.delete(taskId);
         if (!ok) throw new AppError('Задача не найдена', 'task_not_found');
     }
+
+    async getSummary(projectId: string) {
+        const project = await projectsRepo.findById(projectId);
+        if (!project) throw new AppError('Проект не найден', 'project_not_found');
+        return tasksRepo.getSummary(projectId);
+    }
 }
 
 export const taskService = new TaskService();

@@ -9,7 +9,11 @@ export function asyncHandler(fn: RequestHandler): RequestHandler {
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
     if (err instanceof AppError) {
-        res.status(statusFor(err.code)).json({ message: err.message, code: err.code });
+        res.status(statusFor(err.code)).json({
+            message: err.message,
+            code: err.code,
+            ...(err.fields ? { fields: err.fields } : {}),
+        });
         return;
     }
 

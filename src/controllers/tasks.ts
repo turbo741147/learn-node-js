@@ -25,6 +25,11 @@ export class TaskController {
         await taskService.remove(String(req.params.taskId));
         res.status(204).send();
     }
+
+    async getTaskSummary(req: Request, res: Response) {
+        const summary = await taskService.getSummary(String(req.params.projectId));
+        res.json(summary);
+    }
 }
 
 export const taskController = new TaskController();

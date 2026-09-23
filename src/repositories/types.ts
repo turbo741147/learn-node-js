@@ -1,3 +1,4 @@
+import type { TaskStatus } from '../constants.js';
 import type { Project, Task, TaskFilter } from '../types.js';
 
 export interface ProjectRepository {
@@ -13,4 +14,5 @@ export interface TaskRepository {
     findById(id: string): Promise<Task | null>;
     update(task: Task): Promise<Task>;
     delete(id: string): Promise<boolean>;
+    getSummary(projectId: string): Promise<Record<TaskStatus, number>>;
 }

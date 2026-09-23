@@ -2,6 +2,7 @@ import type { Pool } from 'pg';
 import type { Task, TaskFilter } from '../types.js';
 import type { TaskRepository } from '../repositories/types.js';
 import { taskFromRow, type TaskRow } from './typesPg.js';
+import { TASK_STATUSES, type TaskStatus } from '../constants.js';
 
 export class PgTaskRepo implements TaskRepository {
     constructor(private pool: Pool) {}
@@ -27,7 +28,7 @@ export class PgTaskRepo implements TaskRepository {
 
     async findByProjectId(projectId: string, filter: TaskFilter) {
         const result = await this.pool.query<TaskRow>(
-            `select tasks.*
+            `select tasks *
              from tasks
              join projects on projects.id = tasks.project_id
              where tasks.project_id = $1
@@ -59,5 +60,20 @@ export class PgTaskRepo implements TaskRepository {
     async delete(id: string) {
         const result = await this.pool.query('delete from tasks where id = $1', [id]);
         return (result.rowCount ?? 0) > 0;
+    }
+
+    async getSummary(projectId: string) {
+        const result = await this.pool.query<{ status: TaskStatus; count: string }>(
+            `select status, count(*) as count
+             from tasks
+             where project_id = $1
+             group by status`,
+            [projectId],
+        );
+
+        const counts = {} as Record<TaskStatus, number>;
+        for (const status of TASK_STATUSES) counts[status] = 0;
+        for (const row of result.rows) counts[row.status] = Number(row.count);
+        return counts;
     }
 }

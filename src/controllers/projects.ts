@@ -10,12 +10,13 @@ export class ProjectController {
     }
 
     async listProjects(req: Request, res: Response) {
+        console.log(res);
         res.json(await projectService.getAll());
     }
 
     async getProject(req: Request, res: Response) {
         console.log(req.params);
-        const project = await projectService.getById(String(req.params.projectId));
+        const project = await projectService.getById(req.params.projectId as string);
         res.json(project);
     }
 }

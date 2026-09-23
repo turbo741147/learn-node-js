@@ -1,10 +1,12 @@
 export class AppError extends Error {
     readonly code: string;
+    readonly fields?: Record<string, string>;
 
-    constructor(message: string, code: string) {
+    constructor(message: string, code: string, fields?: Record<string, string> | undefined) {
         super(message);
         this.name = 'AppError';
         this.code = code;
+        this.fields = fields;
     }
 }
 
@@ -17,3 +19,5 @@ const STATUS_BY_CODE: Record<string, number> = {
 export function statusFor(code: string): number {
     return STATUS_BY_CODE[code] ?? 500;
 }
+
+
