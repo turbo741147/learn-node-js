@@ -5,6 +5,7 @@ import { taskService } from '../services/tasks.js';
 export class TaskController {
     async createTask(req: Request, res: Response) {
         const body = res.locals.input as CreateTaskInput;
+        console.log(body);
         const task = await taskService.create(String(req.params.projectId), body);
         res.status(201).json(task);
     }
@@ -17,6 +18,7 @@ export class TaskController {
 
     async updateTask(req: Request, res: Response) {
         const body = res.locals.input as UpdateTaskInput;
+        console.log(body);
         const task = await taskService.update(String(req.params.taskId), body);
         res.json(task);
     }
