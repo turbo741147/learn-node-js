@@ -1,7 +1,10 @@
-import { DEFAULT_TASK_STATUS } from '../constants.js';
-import { pool } from '../db.js';
-import type { CreateProjectInput, Project, Task } from '../types.js';
-import { AppError } from '../errors.js';
+import { PROJECT_ID_PREFIX } from '../utils/common/constantProject.js';
+import { DEFAULT_TASK_STATUS, TASK_ID_PREFIX } from '../utils/common/constantsTask.js';
+import { pool } from '../db/db.js';
+import type { CreateProjectInput, Project } from '../utils/common/typeProject.js';
+import type { Task } from '../utils/common/typesTask.js';
+import { AppError } from '../utils/exceptions/errors.js';
+import { iso } from '../utils/date/iso.js';
 
 type ProjectRow = {
     id: string;
@@ -9,11 +12,6 @@ type ProjectRow = {
     description: string | null;
     created_at: Date | string;
 };
-
-function iso(value: Date | string) {
-    if (value instanceof Date) return value.toISOString();
-    return new Date(value).toISOString();
-}
 
 function projectFromRow(row: ProjectRow): Project {
     return {
@@ -28,7 +26,7 @@ export class ProjectService {
     async create(input: CreateProjectInput): Promise<Project> {
         const now = new Date().toISOString();
         const project: Project = {
-            id: 'project-' + input.name,
+            id: PROJECT_ID_PREFIX + input.name,
             name: input.name,
             description: input.description ?? null,
             createdAt: now,
@@ -43,7 +41,7 @@ export class ProjectService {
         }
 
         const task: Task = {
-            id: 'task-' + input.task.title,
+            id: TASK_ID_PREFIX + input.task.title,
             projectId: project.id,
             title: input.task.title,
             description: input.task.description ?? null,

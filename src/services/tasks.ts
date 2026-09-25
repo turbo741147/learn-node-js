@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { DEFAULT_TASK_STATUS, TASK_STATUSES, type TaskStatus } from '../constants.js';
-import { pool } from '../db.js';
-import type { CreateTaskInput, Task, TaskFilter, UpdateTaskInput } from '../types.js';
-import { AppError } from '../errors.js';
+import { DEFAULT_TASK_STATUS, TASK_ID_PREFIX, TASK_STATUSES, type TaskStatus } from '../utils/common/constantsTask.js';
+import { pool } from '../db/db.js';
+import type { CreateTaskInput, Task, TaskFilter, UpdateTaskInput } from '../utils/common/typesTask.js';
+import { AppError } from '../utils/exceptions/errors.js';
+import { iso } from '../utils/date/iso.js';
 import { projectService } from './projects.js';
 
 type TaskRow = {
@@ -15,11 +16,6 @@ type TaskRow = {
     created_at: Date | string;
     updated_at: Date | string;
 };
-
-function iso(value: Date | string) {
-    if (value instanceof Date) return value.toISOString();
-    return new Date(value).toISOString();
-}
 
 function taskFromRow(row: TaskRow): Task {
     return {
@@ -44,7 +40,7 @@ export class TaskService {
              values ($1, $2, $3, $4, $5, $6, $7, $8)
              returning *`,
             [
-                'task-' + randomUUID(),
+                TASK_ID_PREFIX + randomUUID(),
                 projectId,
                 input.title,
                 input.description ?? null,

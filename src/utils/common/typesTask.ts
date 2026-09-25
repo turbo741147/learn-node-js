@@ -1,11 +1,4 @@
-import type { TaskStatus } from './constants.js';
-
-export type Project = {
-    id: string;
-    name: string;
-    description: string | null;
-    createdAt: string;
-};
+import type { TaskStatus } from './constantsTask.js';
 
 export type Task = {
     id: string;
@@ -23,17 +16,6 @@ export type TaskFilter = {
     assigneeId?: string;
 };
 
-export type CreateProjectInput = {
-    name: string;
-    description?: string;
-    task?: {
-        title: string;
-        description?: string;
-        assigneeId?: string;
-        status?: TaskStatus;
-    };
-};
-
 export type CreateTaskInput = {
     title: string;
     description?: string;
@@ -46,4 +28,8 @@ export type UpdateTaskInput = {
     description?: string | null;
     status?: TaskStatus;
     assigneeId?: string | null;
+};
+
+export type TaskParams = {
+    taskId: string;
 };

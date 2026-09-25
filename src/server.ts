@@ -1,14 +1,14 @@
-import { DEFAULT_PORTS } from "./constants.js";
-import { app } from "./app.js";
+import { config } from './config/config.js';
+import { app } from './app.js';
 
-const port = process.env.PORT || DEFAULT_PORTS;
+const port = config.port;
 
 app.listen(port, (error?: Error) => {
-  if (error) {
-    console.error(`Failed to start server on port ${port}`);
-    console.error(error.message);
-    process.exit(1);
-  }
+    if (error) {
+        console.error(`Failed to start server on port ${port}`);
+        console.error(error.message);
+        process.exit(1);
+    }
 
-  console.log(`Server is running on port ${port}`);
+    console.log(`Server is running on port ${port}`);
 });

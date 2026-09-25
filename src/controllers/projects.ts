@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { CreateProjectInput } from '../types.js';
+import type { CreateProjectInput, ProjectParams } from '../utils/common/typeProject.js';
 import { projectService } from '../services/projects.js';
 
 export class ProjectController {
@@ -9,14 +9,13 @@ export class ProjectController {
         res.status(201).json(project);
     }
 
-    async listProjects(req: Request, res: Response) {
-        console.log(res);
+    async listProjects(_req: Request, res: Response) {
         res.json(await projectService.getAll());
     }
 
-    async getProject(req: Request, res: Response) {
-        console.log(req.params);
-        const project = await projectService.getById(req.params.projectId as string);
+    async getProject(_req: Request, res: Response) {
+        const { projectId } = res.locals.params as ProjectParams;
+        const project = await projectService.getById(projectId);
         res.json(project);
     }
 }

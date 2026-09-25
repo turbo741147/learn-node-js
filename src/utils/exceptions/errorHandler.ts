@@ -1,11 +1,5 @@
-import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { AppError, statusFor } from './errors.js';
-
-export function asyncHandler(fn: RequestHandler): RequestHandler {
-    return (req, res, next) => {
-        Promise.resolve(fn(req, res, next)).catch(next);
-    };
-}
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
     if (err instanceof AppError) {
